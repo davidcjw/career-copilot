@@ -19,6 +19,25 @@ from settings import get_settings
 PROVIDER_DIMS = {"voyage": 1024, "local": 384}
 
 
+class LocalEmbeddings(Embeddings):
+    """sentence-transformers bge-small wrapper (free, offline, no rate limits).
+
+    Wrapped directly instead of via langchain-huggingface to avoid that
+    package's langchain-core>=1.0 pin clashing with the 0.3.x stack.
+    """
+
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5"):
+        from sentence_transformers import SentenceTransformer
+
+        self._model = SentenceTransformer(model_name)
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return self._model.encode(texts, normalize_embeddings=True).tolist()
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._model.encode([text], normalize_embeddings=True)[0].tolist()
+
+
 def get_embeddings() -> Embeddings:
     s = get_settings()
 
@@ -35,9 +54,6 @@ def get_embeddings() -> Embeddings:
         return VoyageAIEmbeddings(model="voyage-3")
 
     if s.embeddings_provider == "local":
-        # Heavy (torch) — only imported when actually selected.
-        from langchain_huggingface import HuggingFaceEmbeddings
-
-        return HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+        return LocalEmbeddings()
 
     raise ValueError(f"Unknown EMBEDDINGS_PROVIDER: {s.embeddings_provider!r}")

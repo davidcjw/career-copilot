@@ -26,9 +26,10 @@ rag = [
     "pypdf>=5.0",
 ]
 # Local, free, offline embeddings fallback (pulls torch — heavy). Only needed
-# when EMBEDDINGS_PROVIDER=local.
+# when EMBEDDINGS_PROVIDER=local. We wrap sentence-transformers directly rather
+# than via langchain-huggingface, whose latest pins langchain-core>=1.0 and
+# conflicts with the langchain-anthropic/voyageai 0.3.x stack.
 local = [
-    "langchain-huggingface>=0.1",
     "sentence-transformers>=3.0",
 ]
 dev = [

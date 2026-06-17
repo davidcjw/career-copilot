@@ -11,9 +11,6 @@ from langchain_postgres import PGVector
 from rag.embeddings import get_embeddings
 from settings import get_settings
 
-COLLECTION_NAME = "resume_chunks"
-
-
 def _psycopg_url(database_url: str) -> str:
     # langchain-postgres requires the psycopg (v3) SQLAlchemy driver.
     if database_url.startswith("postgresql+psycopg://"):
@@ -21,11 +18,17 @@ def _psycopg_url(database_url: str) -> str:
     return database_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
 
+def collection_name() -> str:
+    # Provider-aware: voyage-3 (1024d) and bge-small (384d) have different vector
+    # dimensions and must not share a collection. Switching provider re-indexes.
+    return f"resume_chunks_{get_settings().embeddings_provider}"
+
+
 def get_vector_store() -> PGVector:
     s = get_settings()
     return PGVector(
         embeddings=get_embeddings(),
-        collection_name=COLLECTION_NAME,
+        collection_name=collection_name(),
         connection=_psycopg_url(s.database_url),
         use_jsonb=True,
     )

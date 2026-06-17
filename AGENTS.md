@@ -11,7 +11,20 @@ the source of truth for architecture and the 7-step build plan.
 
 ## Current state
 
-Build **step 4 of 7** is done: the self-correcting agent. `graph/` has `state.py`
+Build **step 5 of 7** is done: the eval suite. `eval/` has `dataset.py` (3+
+seed resume/JD pairs with `truly_missing` reference), `judges.py` (LLM-as-judge
+`groundedness` / `jd_relevance` / `gap_recall`, Opus), and `run_eval.py`
+(`python -m eval.run_eval [--limit N]` → LangSmith experiment). Smoke-tested on
+1 example: groundedness 0.95, jd_relevance 0.95, gap_recall 1.00.
+
+**Embeddings now default to local** (`EMBEDDINGS_PROVIDER=local` in `.env`):
+`rag/embeddings.py:LocalEmbeddings` wraps `sentence-transformers` bge-small
+directly (NOT langchain-huggingface — its latest pins langchain-core>=1.0 and
+breaks the 0.3.x langchain-anthropic/voyageai stack). Provider-aware collections
+(`resume_chunks_<provider>`) keep 384d/1024d data separate. `ingest_text()` is
+the DB-free-of-PDF ingest path used by evals.
+
+Build **step 4** (still current): the self-correcting agent. `graph/` has `state.py`
 (CopilotState + structured-output models incl. `Critique`), `llm.py` (Haiku fast
 / Opus draft), `prompts.py`, `nodes.py` (`parse_jd`, `retrieve_evidence`,
 `gap_analysis`, `draft`, `critic`, `revise`, `assemble`), and `build.py`

@@ -28,9 +28,10 @@ See [`DESIGN.md`](./DESIGN.md) for the full architecture and rationale.
 - [Roadmap](#roadmap)
 - [Acknowledgements](#acknowledgements)
 
-> **Status:** Step 4 of 7 — the self-correcting agent. A bounded
-> `critic → revise → critic` loop now sits between `draft` and `assemble`, with
-> LangSmith tracing. `/tailor` is live. Build plan lives in `DESIGN.md` §9.
+> **Status:** Step 5 of 7 — the LangSmith eval suite (LLM-as-judge
+> groundedness / JD-relevance / gap-recall over a seed dataset). The
+> self-correcting `critic → revise` loop and `/tailor` are live. Build plan
+> lives in `DESIGN.md` §9.
 
 ## Stack
 
@@ -39,7 +40,7 @@ See [`DESIGN.md`](./DESIGN.md) for the full architecture and rationale.
 | Backend | Python 3.12+, FastAPI |
 | Agent | LangGraph (`critic → revise` loop) |
 | RAG | LangChain + pgvector |
-| Embeddings | Voyage `voyage-3` (local `bge-small` fallback) |
+| Embeddings | local `bge-small` (dev default) · Voyage `voyage-3` (set `EMBEDDINGS_PROVIDER=voyage`) |
 | LLM | Claude Opus 4.8 (draft/critic) + Haiku 4.5 (cheap nodes) |
 | Observability | LangSmith |
 | Frontend | Next.js 16 + Tailwind v4 *(later step)* |
@@ -104,6 +105,23 @@ curl -X POST http://localhost:8000/tailor \
 > a Voyage `RateLimitError`, add a payment method (the 200M free tokens still
 > apply) or set `EMBEDDINGS_PROVIDER=local` for the offline `bge` fallback.
 
+### Run the eval suite
+
+```bash
+cd backend && source .venv/bin/activate   # needs ".[dev,rag,local]"
+python -m eval.run_eval --limit 1   # smoke test (~cents)
+python -m eval.run_eval             # full dataset (~$1-2 of Anthropic credit)
+# LLM-as-judge groundedness / jd_relevance / gap_recall -> LangSmith experiment
+```
+
+### Embeddings provider
+
+`EMBEDDINGS_PROVIDER=local` (default) uses `bge-small` via `sentence-transformers`
+— free, offline, no rate limits; ideal for eval loops. Set
+`EMBEDDINGS_PROVIDER=voyage` for `voyage-3` (the "production" path). The two use
+different vector dimensions, so each writes to its own pgvector collection
+(`resume_chunks_<provider>`); switching providers re-indexes.
+
 ### Inspect the graph (`langgraph dev`)
 
 ```bash
@@ -161,7 +179,7 @@ Full build plan in [`DESIGN.md`](./DESIGN.md) §9. High level:
 - [x] **1–2.** Repo skeleton + RAG ingest (PDF → chunk → embed → pgvector)
 - [x] **3.** LangGraph spine (`parse_jd → retrieve → gap_analysis → draft → assemble`)
 - [x] **4.** Self-correcting `critic → revise` loop (bounded by `MAX_REVISIONS`)
-- [ ] **5.** LangSmith eval suite (LLM-as-judge groundedness + relevance)
+- [x] **5.** LangSmith eval suite (LLM-as-judge groundedness / relevance / gap-recall)
 - [ ] **6.** Next.js frontend
 - [ ] **7.** Polish, trace/eval screenshots, deploy
 

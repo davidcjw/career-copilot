@@ -32,18 +32,15 @@ def chunk_resume(text: str) -> list[str]:
     return [c.strip() for c in _SPLITTER.split_text(text) if c.strip()]
 
 
-def ingest_pdf(pdf_bytes: bytes, resume_id: str | None = None) -> tuple[str, int]:
-    """Parse, chunk, embed and upsert a resume. Returns (resume_id, chunk_count)."""
+def ingest_text(text: str, resume_id: str | None = None) -> tuple[str, int]:
+    """Chunk, embed and upsert resume text. Returns (resume_id, chunk_count)."""
     resume_id = resume_id or str(uuid.uuid4())
-    chunks = chunk_resume(extract_text(pdf_bytes))
+    chunks = chunk_resume(text)
     if not chunks:
-        raise ValueError("No extractable text found in the PDF.")
+        raise ValueError("No usable text to ingest.")
 
     docs = [
-        Document(
-            page_content=chunk,
-            metadata={"resume_id": resume_id, "chunk_index": i},
-        )
+        Document(page_content=chunk, metadata={"resume_id": resume_id, "chunk_index": i})
         for i, chunk in enumerate(chunks)
     ]
 
@@ -52,3 +49,11 @@ def ingest_pdf(pdf_bytes: bytes, resume_id: str | None = None) -> tuple[str, int
 
     get_vector_store().add_documents(docs)
     return resume_id, len(chunks)
+
+
+def ingest_pdf(pdf_bytes: bytes, resume_id: str | None = None) -> tuple[str, int]:
+    """Parse a PDF resume, then chunk/embed/upsert. Returns (resume_id, chunk_count)."""
+    text = extract_text(pdf_bytes)
+    if not text.strip():
+        raise ValueError("No extractable text found in the PDF.")
+    return ingest_text(text, resume_id)
