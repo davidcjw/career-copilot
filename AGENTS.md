@@ -11,16 +11,26 @@ the source of truth for architecture and the 7-step build plan.
 
 ## Current state
 
-Build **step 2 of 7** is done: RAG ingest. `rag/` has `embeddings.py` (Voyage
-default / local bge fallback), `store.py` (pgvector via langchain-postgres),
-`ingest.py` (PDF → bullet-aware chunks → upsert), `retriever.py`. `/ingest` is
-live. Chunking + the `/ingest` non-PDF guard are unit-tested (DB-free).
-**Live ingest is verified** against Supabase pgvector (project
-`personalprojects` / `iesakyswjojhxkuticdi`, region ap-northeast-1) using the
-Session pooler (port 5432) + Voyage `voyage-3`: a sample resume PDF ingested,
-persisted to the `resume_chunks` collection, and retrieval returned correctly
-ranked, resume-scoped chunks. `docker-compose.yml` remains as a local
-alternative. `graph/` and `eval/` are still empty until their steps.
+Build **step 3 of 7** is done: the LangGraph spine. `graph/` has `state.py`
+(CopilotState + structured-output pydantic models), `llm.py` (Claude factories:
+Haiku fast / Opus draft), `prompts.py`, `nodes.py`, and `build.py` (compiled
+`graph`). Topology: `parse_jd → retrieve_evidence → gap_analysis → draft →
+assemble` (linear; the critic→revise loop is step 4). `/tailor` runs it.
+`langgraph.json` enables `langgraph dev`. **Verified live end-to-end** against
+Claude + Voyage + Supabase: grounded tailored bullets (no fabrication) + a gap
+report correctly flagging missing/weak coverage. LangSmith tracing confirmed
+(per-node spans upload to project `career-copilot`).
+
+Step 2 (RAG ingest) remains: `rag/` = `embeddings.py` (Voyage default / local
+bge fallback), `store.py` (pgvector via langchain-postgres), `ingest.py`,
+`retriever.py` (`retrieve` + `retrieve_batch`). DB = Supabase `personalprojects`
+/ `iesakyswjojhxkuticdi`, Session pooler 5432, collection `resume_chunks`.
+`eval/` is still empty until step 5.
+
+**Voyage free tier = 3 RPM.** `retrieve_evidence` uses `retrieve_batch` (one
+embedding call for all requirement queries) to stay under it. Keys are exported
+from `settings.py` into `os.environ` (`export_to_env`) so langchain-anthropic
+and LangSmith pick them up.
 
 Known tuning item: PDF text extraction can collapse newlines, so the bullet
 separators don't always fire and a 1-page resume may yield few coarse chunks.

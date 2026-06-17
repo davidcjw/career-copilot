@@ -14,3 +14,20 @@ class HealthResponse(BaseModel):
 class IngestResponse(BaseModel):
     resume_id: str
     chunk_count: int
+
+
+class TailorRequest(BaseModel):
+    resume_id: str
+    job_description: str
+
+
+class GapItem(BaseModel):
+    requirement: str
+    status: str
+    note: str
+
+
+class TailorResponse(BaseModel):
+    tailored_bullets: list[str]
+    gaps: list[GapItem]
+    summary: str

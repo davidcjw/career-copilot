@@ -8,7 +8,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from api.schemas import HealthResponse, IngestResponse
+from api.schemas import (
+    GapItem,
+    HealthResponse,
+    IngestResponse,
+    TailorRequest,
+    TailorResponse,
+)
 from settings import get_settings
 
 router = APIRouter()
@@ -49,3 +55,20 @@ async def ingest(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     return IngestResponse(resume_id=rid, chunk_count=count)
+
+
+@router.post("/tailor", response_model=TailorResponse, tags=["graph"])
+def tailor(req: TailorRequest) -> TailorResponse:
+    """Run the LangGraph agent: parse JD -> retrieve -> gap analysis -> draft."""
+    # Lazy import so the app boots without the langgraph/LLM stack installed.
+    from graph.build import graph
+
+    final = graph.invoke(
+        {"job_description": req.job_description, "resume_id": req.resume_id}
+    )
+    report = final.get("gap_report") or {}
+    return TailorResponse(
+        tailored_bullets=final.get("tailored_bullets", []),
+        gaps=[GapItem(**g) for g in report.get("gaps", [])],
+        summary=report.get("summary", ""),
+    )

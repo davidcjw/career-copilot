@@ -28,8 +28,9 @@ See [`DESIGN.md`](./DESIGN.md) for the full architecture and rationale.
 - [Roadmap](#roadmap)
 - [Acknowledgements](#acknowledgements)
 
-> **Status:** Step 2 of 7 — RAG ingest (`/ingest`: PDF → chunk → embed →
-> pgvector) + retriever. Build plan lives in `DESIGN.md` §9.
+> **Status:** Step 3 of 7 — LangGraph spine (`parse_jd → retrieve_evidence →
+> gap_analysis → draft → assemble`) wired to Claude, with LangSmith tracing.
+> `/tailor` is live. Build plan lives in `DESIGN.md` §9.
 
 ## Stack
 
@@ -86,6 +87,28 @@ internally.
 # Needs DATABASE_URL reachable + VOYAGE_API_KEY set
 curl -F "file=@/path/to/resume.pdf" http://localhost:8000/ingest
 # -> {"resume_id":"...","chunk_count":12}
+```
+
+### Tailor against a job description
+
+```bash
+# Needs ANTHROPIC_API_KEY (+ LANGCHAIN_API_KEY for tracing) in .env
+curl -X POST http://localhost:8000/tailor \
+  -H 'content-type: application/json' \
+  -d '{"resume_id":"...","job_description":"We are hiring a Senior Backend Engineer ..."}'
+# -> {"tailored_bullets":[...], "gaps":[...], "summary":"..."}
+```
+
+> **Voyage free tier is 3 requests/min.** `retrieve_evidence` batches all
+> requirement queries into a single embedding call to stay under it; if you see
+> a Voyage `RateLimitError`, add a payment method (the 200M free tokens still
+> apply) or set `EMBEDDINGS_PROVIDER=local` for the offline `bge` fallback.
+
+### Inspect the graph (`langgraph dev`)
+
+```bash
+cd backend && source .venv/bin/activate   # needs ".[dev]"
+langgraph dev                              # opens the LangGraph Studio UI
 ```
 
 ## Tests
