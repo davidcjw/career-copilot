@@ -41,6 +41,13 @@ export function ResumeDrop({
 
   return (
     <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/pdf,.pdf"
+        className="hidden"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
       <motion.button
         type="button"
         onClick={() => inputRef.current?.click()}
