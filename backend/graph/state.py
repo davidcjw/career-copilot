@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Literal, TypedDict
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ---- structured-output schemas (LLM targets) ----
@@ -42,6 +42,34 @@ class DraftBullets(BaseModel):
     bullets: list[str] = Field(
         description="Tailored resume bullets, each grounded ONLY in the provided evidence."
     )
+
+
+class Critique(BaseModel):
+    grounded: bool = Field(
+        description="True only if EVERY bullet is supported by the evidence — no fabricated "
+        "experience, employers, metrics, or skills."
+    )
+    overall_score: float = Field(
+        description="0.0-1.0 overall quality: groundedness, JD relevance, and impact phrasing."
+    )
+    unsupported_claims: list[str] = Field(
+        default_factory=list,
+        description="Any bullet or phrase NOT supported by the evidence. Empty if all grounded.",
+    )
+    notes: list[str] = Field(
+        default_factory=list,
+        description="Specific, actionable instructions for improving the bullets.",
+    )
+
+    @field_validator("unsupported_claims", "notes", mode="before")
+    @classmethod
+    def _coerce_list(cls, v):
+        # Claude occasionally serializes "no items" as "" or "none" instead of [].
+        if v in (None, "", "none", "None", "N/A"):
+            return []
+        if isinstance(v, str):
+            return [v]
+        return v
 
 
 # ---- graph state ----

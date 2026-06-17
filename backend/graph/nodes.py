@@ -9,7 +9,17 @@ from __future__ import annotations
 
 from graph import prompts
 from graph.llm import get_draft_llm, get_fast_llm
-from graph.state import DraftBullets, GapReport, JDRequirements
+from graph.state import Critique, DraftBullets, GapReport, JDRequirements
+
+
+def _format_requirements(reqs: list[dict]) -> str:
+    return "\n".join(
+        f"- [{'MUST' if r['must_have'] else 'nice'}] {r['text']}" for r in reqs
+    )
+
+
+def _format_bullets(bullets: list[str]) -> str:
+    return "\n".join(f"- {b}" for b in bullets)
 
 
 def _format_reqs_and_evidence(evidence: list[dict]) -> str:
@@ -52,19 +62,43 @@ def gap_analysis(state: dict) -> dict:
 
 def draft(state: dict) -> dict:
     llm = get_draft_llm().with_structured_output(DraftBullets)
-    requirements = "\n".join(
-        f"- [{'MUST' if r['must_have'] else 'nice'}] {r['text']}"
-        for r in state["jd_requirements"]
-    )
     prompt = prompts.DRAFT.format(
-        requirements=requirements,
+        requirements=_format_requirements(state["jd_requirements"]),
         evidence=_format_reqs_and_evidence(state["evidence"]),
     )
     result: DraftBullets = llm.invoke(prompt)
     return {"draft_bullets": result.bullets}
 
 
+def critic(state: dict) -> dict:
+    llm = get_draft_llm().with_structured_output(Critique)
+    prompt = prompts.CRITIC.format(
+        requirements=_format_requirements(state["jd_requirements"]),
+        evidence=_format_reqs_and_evidence(state["evidence"]),
+        bullets=_format_bullets(state["draft_bullets"]),
+    )
+    result: Critique = llm.invoke(prompt)
+    return {"critique": result.model_dump()}
+
+
+def revise(state: dict) -> dict:
+    llm = get_draft_llm().with_structured_output(DraftBullets)
+    critique = state.get("critique") or {}
+    prompt = prompts.REVISE.format(
+        requirements=_format_requirements(state["jd_requirements"]),
+        evidence=_format_reqs_and_evidence(state["evidence"]),
+        bullets=_format_bullets(state["draft_bullets"]),
+        unsupported=_format_bullets(critique.get("unsupported_claims", [])) or "(none)",
+        notes=_format_bullets(critique.get("notes", [])) or "(none)",
+    )
+    result: DraftBullets = llm.invoke(prompt)
+    return {
+        "draft_bullets": result.bullets,
+        "revision_count": state.get("revision_count", 0) + 1,
+    }
+
+
 def assemble(state: dict) -> dict:
-    # Pure packaging — no LLM call. The critic/revise loop (step 4) slots in
-    # before this node.
+    # Pure packaging — no LLM call. Runs once the critic loop converges or the
+    # revision budget is spent.
     return {"tailored_bullets": state.get("draft_bullets", [])}

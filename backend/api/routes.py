@@ -64,11 +64,14 @@ def tailor(req: TailorRequest) -> TailorResponse:
     from graph.build import graph
 
     final = graph.invoke(
-        {"job_description": req.job_description, "resume_id": req.resume_id}
+        {"job_description": req.job_description, "resume_id": req.resume_id},
+        # Tag the LangSmith trace so runs are filterable by resume.
+        config={"metadata": {"resume_id": req.resume_id}},
     )
     report = final.get("gap_report") or {}
     return TailorResponse(
         tailored_bullets=final.get("tailored_bullets", []),
         gaps=[GapItem(**g) for g in report.get("gaps", [])],
         summary=report.get("summary", ""),
+        revisions=final.get("revision_count", 0),
     )

@@ -50,3 +50,53 @@ JOB REQUIREMENTS:
 RESUME EVIDENCE (the only facts you may use):
 {evidence}
 """
+
+CRITIC = """\
+You are a rigorous resume reviewer. Critique the tailored bullets below against \
+the evidence and the job requirements.
+
+Judge three things:
+1. Groundedness (most important): is every bullet fully supported by the \
+   evidence? Flag ANY claim — experience, employer, metric, skill — that is not \
+   in the evidence as an unsupported_claim. If any exist, set grounded=false.
+2. Relevance: do the bullets target the job's must-have requirements?
+3. Impact: strong action verbs and concrete, evidence-backed results?
+
+Give an overall_score from 0.0 to 1.0 and specific, actionable notes. Be strict: \
+fabrication is disqualifying regardless of how good the writing is.
+
+JOB REQUIREMENTS:
+{requirements}
+
+RESUME EVIDENCE (the only facts allowed):
+{evidence}
+
+TAILORED BULLETS TO REVIEW:
+{bullets}
+"""
+
+REVISE = """\
+You are revising tailored resume bullets to address a reviewer's critique. \
+Rewrite the bullets so they fix every issue raised, while staying grounded \
+ONLY in the evidence.
+
+Hard rules:
+- Remove or rewrite every unsupported claim — never invent facts to satisfy a note.
+- Address each reviewer note.
+- Keep bullets that were already strong.
+
+JOB REQUIREMENTS:
+{requirements}
+
+RESUME EVIDENCE (the only facts you may use):
+{evidence}
+
+CURRENT BULLETS:
+{bullets}
+
+REVIEWER — UNSUPPORTED CLAIMS TO FIX:
+{unsupported}
+
+REVIEWER — NOTES TO ADDRESS:
+{notes}
+"""

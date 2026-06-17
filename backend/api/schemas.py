@@ -31,3 +31,4 @@ class TailorResponse(BaseModel):
     tailored_bullets: list[str]
     gaps: list[GapItem]
     summary: str
+    revisions: int  # how many critic -> revise passes the loop ran

@@ -28,9 +28,9 @@ See [`DESIGN.md`](./DESIGN.md) for the full architecture and rationale.
 - [Roadmap](#roadmap)
 - [Acknowledgements](#acknowledgements)
 
-> **Status:** Step 3 of 7 — LangGraph spine (`parse_jd → retrieve_evidence →
-> gap_analysis → draft → assemble`) wired to Claude, with LangSmith tracing.
-> `/tailor` is live. Build plan lives in `DESIGN.md` §9.
+> **Status:** Step 4 of 7 — the self-correcting agent. A bounded
+> `critic → revise → critic` loop now sits between `draft` and `assemble`, with
+> LangSmith tracing. `/tailor` is live. Build plan lives in `DESIGN.md` §9.
 
 ## Stack
 
@@ -159,8 +159,8 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 Full build plan in [`DESIGN.md`](./DESIGN.md) §9. High level:
 
 - [x] **1–2.** Repo skeleton + RAG ingest (PDF → chunk → embed → pgvector)
-- [ ] **3.** LangGraph spine (`parse_jd → retrieve → gap_analysis → draft → assemble`)
-- [ ] **4.** Self-correcting `critic → revise` loop
+- [x] **3.** LangGraph spine (`parse_jd → retrieve → gap_analysis → draft → assemble`)
+- [x] **4.** Self-correcting `critic → revise` loop (bounded by `MAX_REVISIONS`)
 - [ ] **5.** LangSmith eval suite (LLM-as-judge groundedness + relevance)
 - [ ] **6.** Next.js frontend
 - [ ] **7.** Polish, trace/eval screenshots, deploy

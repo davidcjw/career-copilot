@@ -11,15 +11,20 @@ the source of truth for architecture and the 7-step build plan.
 
 ## Current state
 
-Build **step 3 of 7** is done: the LangGraph spine. `graph/` has `state.py`
-(CopilotState + structured-output pydantic models), `llm.py` (Claude factories:
-Haiku fast / Opus draft), `prompts.py`, `nodes.py`, and `build.py` (compiled
-`graph`). Topology: `parse_jd → retrieve_evidence → gap_analysis → draft →
-assemble` (linear; the critic→revise loop is step 4). `/tailor` runs it.
-`langgraph.json` enables `langgraph dev`. **Verified live end-to-end** against
-Claude + Voyage + Supabase: grounded tailored bullets (no fabrication) + a gap
-report correctly flagging missing/weak coverage. LangSmith tracing confirmed
-(per-node spans upload to project `career-copilot`).
+Build **step 4 of 7** is done: the self-correcting agent. `graph/` has `state.py`
+(CopilotState + structured-output models incl. `Critique`), `llm.py` (Haiku fast
+/ Opus draft), `prompts.py`, `nodes.py` (`parse_jd`, `retrieve_evidence`,
+`gap_analysis`, `draft`, `critic`, `revise`, `assemble`), and `build.py`
+(compiled `graph` + `route_after_critic`). Topology: `... → draft → critic →`
+conditional → `revise → critic` (loop) or `assemble`. The loop is bounded by
+`MAX_REVISIONS` (settings; default 2) — the safety valve. `/tailor` runs it and
+returns `revisions`. `langgraph.json` enables `langgraph dev`.
+
+**Verified live**: the critic catches fabricated bullets (sets `grounded=false`,
+lists `unsupported_claims`) and `revise` removes them; the bounded loop runs to
+the safety valve when forced. LangSmith trace captured the full looping run
+(per-node spans, project `career-copilot`). `Critique` has a `field_validator`
+coercing Claude's occasional `""`/`"none"` for the list fields into `[]`.
 
 Step 2 (RAG ingest) remains: `rag/` = `embeddings.py` (Voyage default / local
 bge fallback), `store.py` (pgvector via langchain-postgres), `ingest.py`,
