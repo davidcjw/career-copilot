@@ -1,10 +1,32 @@
 # Career Co-pilot
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![LangGraph](https://img.shields.io/badge/LangGraph-RAG-1c3c3c.svg)
+
 An **agentic resume-tailoring and gap-analysis** tool for job seekers — built to
 showcase production AI engineering: LangGraph (a self-correcting agent loop),
 LangChain, a pgvector RAG pipeline, and end-to-end observability with LangSmith.
 
 See [`DESIGN.md`](./DESIGN.md) for the full architecture and rationale.
+
+<p align="center">
+  <img src="docs/demo.gif" alt="Career Co-pilot demo — resume tailoring and gap analysis" width="680">
+</p>
+
+## Table of Contents
+
+- [Stack](#stack)
+- [Prerequisites](#prerequisites)
+- [Quick start](#quick-start)
+- [Tests](#tests)
+- [Project layout](#project-layout)
+- [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
+- [License](#license)
+- [Roadmap](#roadmap)
+- [Acknowledgements](#acknowledgements)
 
 > **Status:** Step 2 of 7 — RAG ingest (`/ingest`: PDF → chunk → embed →
 > pgvector) + retriever. Build plan lives in `DESIGN.md` §9.
@@ -89,6 +111,39 @@ career-copilot/
 └── AGENTS.md
 ```
 
+## Contributing
+
+Contributions are welcome! Please open an issue first to discuss what you'd like to change.
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'feat: describe change'`)
+4. Push and open a pull request
+
+Please make sure tests pass (`cd backend && pytest -q`) before submitting a PR.
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+By participating you agree to uphold a welcoming, harassment-free environment.
+
 ## License
 
-TBD.
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Roadmap
+
+Full build plan in [`DESIGN.md`](./DESIGN.md) §9. High level:
+
+- [x] **1–2.** Repo skeleton + RAG ingest (PDF → chunk → embed → pgvector)
+- [ ] **3.** LangGraph spine (`parse_jd → retrieve → gap_analysis → draft → assemble`)
+- [ ] **4.** Self-correcting `critic → revise` loop
+- [ ] **5.** LangSmith eval suite (LLM-as-judge groundedness + relevance)
+- [ ] **6.** Next.js frontend
+- [ ] **7.** Polish, trace/eval screenshots, deploy
+
+## Acknowledgements
+
+- [LangChain](https://github.com/langchain-ai/langchain) & [LangGraph](https://github.com/langchain-ai/langgraph)
+- [Anthropic Claude](https://www.anthropic.com/) for generation, [Voyage AI](https://www.voyageai.com/) for embeddings
+- [pgvector](https://github.com/pgvector/pgvector) on [Supabase](https://supabase.com/)
