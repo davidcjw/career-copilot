@@ -17,9 +17,12 @@ its CORS allows `http://localhost:3000`.
 
 ## Design
 
-OLED-dark "agent console" aesthetic: slate/midnight palette, run-green accent
-(`#22c55e`), Fira Code / Fira Sans, status-light gap badges (green / amber /
-red for strong / weak / missing). The run view mirrors the real graph nodes
+Light editorial "dossier" aesthetic: warm bone paper, Fraunces serif display +
+Hanken Grotesk body + JetBrains Mono labels, electric-cobalt accent (`#2742ec`),
+status-light gap badges (green / amber / red for strong / weak / missing).
+Motion via **framer-motion** — staggered page-load reveals, spring card
+transitions, `AnimatePresence` between phases, a pulsing run timeline, and a
+count-up "self-corrected N×" badge. The run view mirrors the real graph nodes
 (`parse_jd → retrieve_evidence → gap_analysis → draft → critic → revise →
 assemble`).
 

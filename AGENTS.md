@@ -12,12 +12,19 @@ the source of truth for architecture and the 7-step build plan.
 ## Current state
 
 Build **step 6 of 7** is done: the Next.js 16 + Tailwind v4 frontend in
-`frontend/` (App Router). OLED "agent console" aesthetic; `app/page.tsx` drives
-the flow (upload → JD → run → results), `components/` = `ResumeDrop` /
-`RunConsole` (staged display mirroring the graph nodes) / `Results`, `lib/api.ts`
-= typed client for `/ingest` + `/tailor` (base URL `NEXT_PUBLIC_API_BASE_URL`,
-default `:8000`). `next.config.ts` pins the Turbopack root (stray parent
-lockfile). `npm run build` passes. Note: **Next 16 is not the training-data
+`frontend/` (App Router). **Light editorial "dossier" aesthetic** — warm bone
+paper, Fraunces serif display + Hanken Grotesk body + JetBrains Mono labels,
+electric-cobalt accent `#2742ec` (intentionally NOT the dark/green-terminal
+look, which clashed with the injection-testbench project). Motion via
+**framer-motion** (`lib/motion.ts` variants: `fadeUp`/`stagger`/`springCard`).
+`app/page.tsx` drives the flow (upload → JD → run → results), `components/` =
+`ResumeDrop` / `RunConsole` (animated timeline mirroring the graph nodes) /
+`Results` (staggered cards, count-up "self-corrected N×" badge). `lib/api.ts` =
+typed client for `/ingest` + `/tailor` (base URL `NEXT_PUBLIC_API_BASE_URL`,
+default `:8000`). Branded favicon at `app/icon.svg` (default Next `favicon.ico`
+removed). `next.config.ts` pins the Turbopack root (stray parent lockfile).
+`npm run build` passes. Note: editing globals.css `@theme` may need `.next`
+cleared for the dev server to pick up new token values. Note: **Next 16 is not the training-data
 Next** — read `frontend/node_modules/next/dist/docs/` before editing; v16 made
 request APIs (`params`) async, but this single static page doesn't use them.
 
