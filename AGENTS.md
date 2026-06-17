@@ -11,7 +11,17 @@ the source of truth for architecture and the 7-step build plan.
 
 ## Current state
 
-Build **step 5 of 7** is done: the eval suite. `eval/` has `dataset.py` (3+
+Build **step 6 of 7** is done: the Next.js 16 + Tailwind v4 frontend in
+`frontend/` (App Router). OLED "agent console" aesthetic; `app/page.tsx` drives
+the flow (upload → JD → run → results), `components/` = `ResumeDrop` /
+`RunConsole` (staged display mirroring the graph nodes) / `Results`, `lib/api.ts`
+= typed client for `/ingest` + `/tailor` (base URL `NEXT_PUBLIC_API_BASE_URL`,
+default `:8000`). `next.config.ts` pins the Turbopack root (stray parent
+lockfile). `npm run build` passes. Note: **Next 16 is not the training-data
+Next** — read `frontend/node_modules/next/dist/docs/` before editing; v16 made
+request APIs (`params`) async, but this single static page doesn't use them.
+
+Build **step 5 of 7** is also done: the eval suite. `eval/` has `dataset.py` (3+
 seed resume/JD pairs with `truly_missing` reference), `judges.py` (LLM-as-judge
 `groundedness` / `jd_relevance` / `gap_recall`, Opus), and `run_eval.py`
 (`python -m eval.run_eval [--limit N]` → LangSmith experiment). Smoke-tested on

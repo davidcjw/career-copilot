@@ -28,10 +28,10 @@ See [`DESIGN.md`](./DESIGN.md) for the full architecture and rationale.
 - [Roadmap](#roadmap)
 - [Acknowledgements](#acknowledgements)
 
-> **Status:** Step 5 of 7 — the LangSmith eval suite (LLM-as-judge
-> groundedness / JD-relevance / gap-recall over a seed dataset). The
-> self-correcting `critic → revise` loop and `/tailor` are live. Build plan
-> lives in `DESIGN.md` §9.
+> **Status:** Step 6 of 7 — the Next.js frontend (`frontend/`): upload a resume,
+> paste a JD, watch the agent run, review tailored bullets + gap report. Eval
+> suite, self-correcting loop, and `/tailor` are all live. Build plan lives in
+> `DESIGN.md` §9.
 
 ## Stack
 
@@ -43,7 +43,7 @@ See [`DESIGN.md`](./DESIGN.md) for the full architecture and rationale.
 | Embeddings | local `bge-small` (dev default) · Voyage `voyage-3` (set `EMBEDDINGS_PROVIDER=voyage`) |
 | LLM | Claude Opus 4.8 (draft/critic) + Haiku 4.5 (cheap nodes) |
 | Observability | LangSmith |
-| Frontend | Next.js 16 + Tailwind v4 *(later step)* |
+| Frontend | Next.js 16 + Tailwind v4 (`frontend/`, OLED "agent console") |
 
 ## Prerequisites
 
@@ -146,11 +146,15 @@ career-copilot/
 │   ├── rag/        # ingest + retrieval        (step 2+)
 │   ├── eval/       # LangSmith eval suite       (step 5+)
 │   └── tests/
+├── frontend/       # Next.js 16 + Tailwind v4 UI (see frontend/README.md)
 ├── db/init/        # pgvector bootstrap SQL
 ├── docker-compose.yml
 ├── DESIGN.md
 └── AGENTS.md
 ```
+
+The frontend lives in [`frontend/`](./frontend) — `npm install && npm run dev`
+(needs the backend on `:8000`).
 
 ## Contributing
 
@@ -180,7 +184,7 @@ Full build plan in [`DESIGN.md`](./DESIGN.md) §9. High level:
 - [x] **3.** LangGraph spine (`parse_jd → retrieve → gap_analysis → draft → assemble`)
 - [x] **4.** Self-correcting `critic → revise` loop (bounded by `MAX_REVISIONS`)
 - [x] **5.** LangSmith eval suite (LLM-as-judge groundedness / relevance / gap-recall)
-- [ ] **6.** Next.js frontend
+- [x] **6.** Next.js frontend (`frontend/` — upload, run, results)
 - [ ] **7.** Polish, trace/eval screenshots, deploy
 
 ## Acknowledgements
